@@ -1,0 +1,518 @@
+<title>Questward</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;450;600&display=swap">
+
+<style>
+  /* Light — "chart paper". Complete palette lives here, on bare :root. */
+  :root {
+    --ink:        #141B28;
+    --ink-soft:   #47536A;
+    --ink-faint:  #7C8798;
+    --ground:     #EDF1F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #E3E9F2;
+    --line:       #CCD5E2;
+    --line-soft:  #DFE5EF;
+    --brass:      #9A6B1F;
+    --brass-lift: #C8944A;
+    --steel:      #2F6C8F;
+    --live:       #1F7A5A;
+    --building:   #9A6B1F;
+    --reserved:   #7C8798;
+    --glow:       rgba(154,107,31,.14);
+    --shadow:     0 1px 2px rgba(20,27,40,.06), 0 8px 24px rgba(20,27,40,.06);
+  }
+  /* System-dark: no stamp on the root, so only the media query separates it. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #E8EDF6;
+      --ink-soft:   #9DAAC0;
+      --ink-faint:  #6B7893;
+      --ground:     #0B1220;
+      --surface:    #141E33;
+      --surface-2:  #1B2740;
+      --line:       #2A3651;
+      --line-soft:  #202B44;
+      --brass:      #C8944A;
+      --brass-lift: #E4B672;
+      --steel:      #6FA8C7;
+      --live:       #4FBF97;
+      --building:   #C8944A;
+      --reserved:   #6B7893;
+      --glow:       rgba(200,148,74,.18);
+      --shadow:     0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.34);
+    }
+  }
+  /* Explicit dark choice wins regardless of OS. */
+  :root[data-theme="dark"] {
+    --ink:        #E8EDF6;
+    --ink-soft:   #9DAAC0;
+    --ink-faint:  #6B7893;
+    --ground:     #0B1220;
+    --surface:    #141E33;
+    --surface-2:  #1B2740;
+    --line:       #2A3651;
+    --line-soft:  #202B44;
+    --brass:      #C8944A;
+    --brass-lift: #E4B672;
+    --steel:      #6FA8C7;
+    --live:       #4FBF97;
+    --building:   #C8944A;
+    --reserved:   #6B7893;
+    --glow:       rgba(200,148,74,.18);
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.34);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { width: min(1080px, 100% - 2.5rem); margin-inline: auto; }
+
+  /* ---------- masthead ---------- */
+  header.masthead {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .masthead .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding-block: .85rem;
+  }
+  .wordmark {
+    display: flex; align-items: center; gap: .6rem;
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 1.5rem; letter-spacing: .01em; color: var(--ink);
+    text-decoration: none;
+  }
+  .wordmark .glyph {
+    width: 26px; height: 26px; flex: none;
+    border: 1.5px solid var(--brass); border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .wordmark .glyph::before {
+    content: ""; width: 2px; height: 15px; background: var(--brass);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    transform: rotate(24deg);
+  }
+  nav.top { display: flex; gap: 1.6rem; }
+  nav.top a {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .74rem; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-soft); text-decoration: none; padding: .3rem 0;
+    border-bottom: 1px solid transparent;
+  }
+  nav.top a:hover, nav.top a:focus-visible { color: var(--ink); border-bottom-color: var(--brass); }
+  @media (max-width: 620px) { nav.top { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line-soft); }
+  #rose {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: .5; pointer-events: none;
+  }
+  .hero .wrap {
+    position: relative; z-index: 1;
+    padding-block: clamp(4.5rem, 13vw, 8.5rem);
+    max-width: 1080px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .74rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--brass); margin: 0 0 1.4rem;
+  }
+  h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400; font-size: clamp(3rem, 9vw, 5.75rem);
+    line-height: .98; letter-spacing: -.015em;
+    margin: 0 0 1.5rem; text-wrap: balance; max-width: 15ch;
+  }
+  h1 em { font-style: italic; color: var(--brass); }
+  .lede {
+    font-size: clamp(1.06rem, 2.1vw, 1.3rem);
+    color: var(--ink-soft); max-width: 56ch; margin: 0 0 2.4rem;
+  }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: .8rem; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .55rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+    padding: .8rem 1.3rem; border-radius: 2px; text-decoration: none;
+    border: 1px solid var(--brass); transition: transform .15s ease, background .15s ease;
+  }
+  .btn-solid { background: var(--brass); color: var(--ground); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-ghost:hover { border-color: var(--brass); }
+
+  /* ---------- sections ---------- */
+  section { padding-block: clamp(3.5rem, 8vw, 6rem); }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 1rem;
+    border-bottom: 1px solid var(--line); padding-bottom: .8rem; margin-bottom: 2.5rem;
+  }
+  .sec-head h2 {
+    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
+    font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0; letter-spacing: -.01em;
+  }
+  .sec-head .count {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .74rem; letter-spacing: .12em; color: var(--ink-faint);
+    margin-left: auto; white-space: nowrap;
+  }
+
+  /* ---------- venture register ---------- */
+  .register { display: flex; flex-direction: column; gap: 1.1rem; }
+  .venture {
+    display: grid; grid-template-columns: 1fr auto; gap: .5rem 2rem;
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: 3px; padding: 1.8rem; box-shadow: var(--shadow);
+    position: relative;
+  }
+  .venture::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent-stripe, var(--line));
+  }
+  .venture[data-state="live"]     { --accent-stripe: var(--live); }
+  .venture[data-state="building"] { --accent-stripe: var(--building); }
+  .venture[data-state="planning"] { --accent-stripe: var(--steel); }
+  .venture[data-state="open"]     { --accent-stripe: transparent;
+    background: transparent; border-style: dashed; box-shadow: none; }
+
+  .venture h4 {
+    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
+    font-size: 1.75rem; margin: 0 0 .1rem; letter-spacing: -.005em;
+  }
+
+  /* Sector grouping. The site has to read as well with twenty ventures as with
+     five, and a flat list does not -- so ventures live under the thing they do,
+     and a new one lands in an existing group instead of extending a wall. */
+  .sector-note {
+    color: var(--ink-soft); max-width: 62ch; margin: 0 0 2.6rem;
+  }
+  .sector { margin-bottom: 2.8rem; }
+  .sector:last-child { margin-bottom: 0; }
+  .room {
+    color: var(--ink-faint); max-width: 62ch; margin: 2.6rem 0 0;
+    padding-top: 1.6rem; border-top: 1px dashed var(--line);
+  }
+  .sector-name {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .74rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 1rem;
+    display: flex; align-items: center; gap: .9rem;
+  }
+  .sector-name::after {
+    content: ""; flex: 1; height: 1px; background: var(--line-soft);
+  }
+  .venture .kind {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 .9rem;
+  }
+  .venture p.body { margin: 0 0 1.2rem; color: var(--ink-soft); max-width: 60ch; }
+  .venture .foot { grid-column: 1 / -1; }
+
+  .chip {
+    align-self: start; justify-self: end;
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .68rem; letter-spacing: .13em; text-transform: uppercase;
+    padding: .32rem .6rem; border-radius: 2px; white-space: nowrap;
+    border: 1px solid currentColor;
+  }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip[data-state="live"]     { color: var(--live); }
+  .chip[data-state="building"] { color: var(--building); }
+  .chip[data-state="planning"] { color: var(--steel); }
+  .chip[data-state="open"]     { color: var(--reserved); border-style: dashed; }
+  .chip[data-state="open"]::before { background: transparent; border: 1px solid currentColor; }
+
+  a.inline {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--brass); text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--brass) 40%, transparent);
+    padding-bottom: 2px;
+  }
+  a.inline:hover, a.inline:focus-visible { border-bottom-color: var(--brass); }
+
+  /* ---------- approach ---------- */
+  .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2.2rem; }
+  .approach h3 {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .74rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--brass); margin: 0 0 .7rem; font-weight: 500;
+  }
+  .approach p { margin: 0; color: var(--ink-soft); }
+
+  /* ---------- contact ---------- */
+  .contact {
+    background: var(--surface-2); border-radius: 3px;
+    padding: clamp(2rem, 5vw, 3.2rem);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem;
+  }
+  .contact h2 {
+    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
+    font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0 0 .4rem;
+  }
+  .contact p { margin: 0; color: var(--ink-soft); max-width: 42ch; }
+
+  footer {
+    border-top: 1px solid var(--line-soft); padding-block: 2rem; margin-top: 2rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem; letter-spacing: .08em; color: var(--ink-faint);
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; justify-content: space-between; }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    * { animation: none !important; }
+  }
+  :focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="#top"><span class="glyph"></span>Questward</a>
+    <nav class="top">
+      <a href="#ventures">Ventures</a>
+      <a href="#approach">Approach</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <canvas id="rose" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <p class="eyebrow">Technology ventures &middot; Est. 2026</p>
+      <h1>We start the companies we <em>wish</em> existed.</h1>
+      <p class="lede">
+        Questward is the company behind a growing group of independent technology
+        ventures &mdash; software, AI services, hardware and fabrication. Each one carries
+        its own name and stands on its own books. What they share is the engineering
+        behind them and the standard they are held to.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="#ventures">See the ventures</a>
+        <a class="btn btn-ghost" href="#contact">Get in touch</a>
+      </div>
+    </div>
+  </div>
+
+  <section id="ventures">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Ventures</h2>
+        <span class="count">04 sectors &middot; 01 live</span>
+      </div>
+
+      <p class="sector-note">
+        Every venture operates as its own company, under its own name &mdash; Relic Ledger
+        powered by Questward, BuildOps powered by Questward, and so on. Grouped here by
+        what they do.
+      </p>
+
+      <div class="sector reveal">
+        <h3 class="sector-name">Software</h3>
+        <div class="register">
+          <article class="venture" data-state="live">
+            <div>
+              <h4>Relic Ledger</h4>
+              <p class="kind">Tabletop campaign manager</p>
+            </div>
+            <span class="chip" data-state="live">Live</span>
+            <div class="foot">
+              <p class="body">A whole tabletop campaign in one place &mdash; the party roster, combat, the bestiary, the lore and the loot, kept current as you play, with each player holding their own character sheet on their own phone.</p>
+              <a class="inline" href="https://relic-ledger-production.up.railway.app">Open the app &rarr;</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="sector reveal">
+        <h3 class="sector-name">AI services</h3>
+        <div class="register">
+          <article class="venture" data-state="planning">
+            <div>
+              <h4>Agent leasing</h4>
+              <p class="kind">Managed AI agents</p>
+            </div>
+            <span class="chip" data-state="planning">Planning</span>
+            <div class="foot">
+              <p class="body">Persistent AI agents that run a specific job for a business, set up and maintained rather than sold as a subscription and abandoned.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="sector reveal">
+        <h3 class="sector-name">Hardware &amp; fabrication</h3>
+        <div class="register">
+          <article class="venture" data-state="planning">
+            <div>
+              <h4>The shop</h4>
+              <p class="kind">Retail and 3D printing</p>
+            </div>
+            <span class="chip" data-state="planning">Planning</span>
+            <div class="foot">
+              <p class="body">Gear for the table, and a print bed behind it &mdash; tabletop tech hardware alongside made-to-order miniatures, terrain and custom parts. The physical side of the hobby Relic Ledger already serves in software.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="sector reveal">
+        <h3 class="sector-name">Development</h3>
+        <div class="register">
+          <article class="venture" data-state="building">
+            <div>
+              <h4>BuildOps AI</h4>
+              <p class="kind">In development</p>
+            </div>
+            <span class="chip" data-state="building">Building</span>
+            <div class="foot">
+              <p class="body">The fourth venture, currently being built. Details when there is something real to show &mdash; we would rather announce it working than announce it soon.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <p class="room reveal">
+        Four sectors, and room in each. Questward is built to hold many of these &mdash; if you
+        know a job people still do with a spreadsheet and a group chat, that is the kind of
+        thing that ends up here.
+      </p>
+
+    </div>
+  </section>
+
+  <section id="approach">
+    <div class="wrap">
+      <div class="sec-head"><h2>How we work</h2></div>
+      <div class="approach">
+        <div class="reveal">
+          <h3>One job, done properly</h3>
+          <p>
+            Each venture solves a single specific problem for the people who actually
+            have it. No product tries to be a platform before it has earned the right.
+          </p>
+        </div>
+        <div class="reveal">
+          <h3>Shipped, not announced</h3>
+          <p>
+            A thing is listed here when you can use it. Relic Ledger went live before
+            it was ever mentioned, and everything after it works the same way.
+          </p>
+        </div>
+        <div class="reveal">
+          <h3>Independent by design</h3>
+          <p>
+            Ventures share a company, not a codebase. Each one can be built, run and
+            judged on its own, which is what keeps any single one from holding the
+            others back.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact">
+        <div>
+          <h2>Start a conversation</h2>
+          <p>Questions about a venture, partnerships, or an awkward job that needs a tool.</p>
+        </div>
+        <a class="btn btn-solid" href="mailto:hello@questward.tech">hello@questward.tech</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Questward</span>
+    <span>Relic Ledger &middot; BuildOps AI</span>
+  </div>
+</footer>
+
+<script>
+  /* A compass rose drawn rather than illustrated: rhumb lines radiating from a
+     point off the right edge, turning slowly. Canvas because the geometry is
+     generated -- hand-authoring this as SVG path data would be unreadable. */
+  (function () {
+    var c = document.getElementById("rose"), x = c.getContext("2d");
+    var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var t = 0, dpr = Math.min(devicePixelRatio || 1, 2);
+
+    function size() {
+      var r = c.getBoundingClientRect();
+      c.width = r.width * dpr; c.height = r.height * dpr;
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function tint() {
+      return getComputedStyle(document.documentElement).getPropertyValue("--brass").trim() || "#C8944A";
+    }
+
+    function draw() {
+      var w = c.clientWidth, h = c.clientHeight;
+      x.clearRect(0, 0, w, h);
+      var cx = w * 0.82, cy = h * 0.42, R = Math.max(w, h) * 0.78;
+      var col = tint();
+
+      x.save();
+      x.translate(cx, cy);
+      x.rotate(t);
+
+      /* 32 rhumb lines, every fourth one weighted -- the cardinal points */
+      for (var i = 0; i < 32; i++) {
+        var a = (i / 32) * Math.PI * 2, major = i % 4 === 0;
+        x.beginPath();
+        x.moveTo(0, 0);
+        x.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+        x.strokeStyle = col;
+        x.globalAlpha = major ? 0.16 : 0.06;
+        x.lineWidth = major ? 1.1 : 0.6;
+        x.stroke();
+      }
+
+      /* concentric bearing rings */
+      for (var k = 1; k <= 5; k++) {
+        x.beginPath();
+        x.arc(0, 0, (R / 6) * k, 0, Math.PI * 2);
+        x.strokeStyle = col; x.globalAlpha = 0.09; x.lineWidth = 0.7;
+        x.stroke();
+      }
+      x.restore();
+    }
+
+    function loop() { t += 0.0009; draw(); requestAnimationFrame(loop); }
+
+    size(); draw();
+    addEventListener("resize", function () { size(); draw(); });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+    if (!reduce) loop();
+  })();
+
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+</script>
